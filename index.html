@@ -216,6 +216,36 @@
     }
     .page-overlay { position: fixed; inset: 0; background: rgba(245,240,232,0.82); z-index: 0; pointer-events: none; }
   main, header, footer { position: relative; z-index: 1; }
+
+  /* PAGE NAVIGATION */
+  .page-hidden { display: none; }
+  .fade-in { animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .results-topbar { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 12px rgba(27,45,91,0.08); }
+  .back-btn { background: var(--cream-dark); border: none; border-radius: 9px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--navy); flex-shrink: 0; transition: background 0.2s; }
+  .back-btn:hover { background: var(--border); }
+  body.dark-mode .back-btn { color: #EDEFF5; }
+  .results-topbar .search-row { flex: 1; margin: 0; }
+
+  /* CHECKOUT CTA (bottom of page 2) */
+  .checkout-cta { text-align: center; margin-top: 32px; }
+  .checkout-cta-btn { background: var(--maroon); color: white; border: none; border-radius: 12px; padding: 14px 28px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 16px rgba(122,26,26,0.25); }
+  .checkout-cta-btn:hover { background: var(--maroon-light); }
+
+  /* PAGE 3 — CHECKOUT INSTRUCTIONS */
+  .checkout-card { background: var(--white); border: 1px solid var(--border); border-radius: 18px; padding: 32px 28px; box-shadow: 0 4px 20px rgba(27,45,91,0.08); }
+  .checkout-card h2 { font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+  .checkout-card .checkout-sub { font-size: 13px; color: var(--mid); margin-bottom: 20px; }
+  body.dark-mode .checkout-card h2 { color: #EDEFF5; }
+  .checkout-tg-btn { display: inline-flex; align-items: center; gap: 8px; background: #229ED9; color: white; border: none; border-radius: 10px; padding: 11px 20px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; margin-bottom: 22px; transition: background 0.2s; }
+  .checkout-tg-btn:hover { background: #1c87ba; }
+  .checkout-format { background: var(--cream); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; font-family: 'DM Mono', monospace; font-size: 13px; line-height: 2; color: var(--charcoal); white-space: pre-wrap; margin-bottom: 18px; }
+  body.dark-mode .checkout-format { background: var(--cream-dark); }
+  .checkout-note { font-size: 12.5px; color: var(--mid); line-height: 1.6; background: rgba(122,26,26,0.06); border-left: 3px solid var(--maroon); border-radius: 0 8px 8px 0; padding: 12px 16px; }
+  .checkout-note strong { color: var(--maroon); }
+  body.dark-mode .checkout-note { background: rgba(239,154,154,0.08); }
+  body.dark-mode .checkout-note strong { color: #EF9A9A; }
 </style>
 </head>
 <body>
@@ -230,6 +260,11 @@
 </header>
 
 <main>
+  <!-- ============================================ -->
+  <!--  PAGE 1 — LANDING (Announcements + Search)   -->
+  <!-- ============================================ -->
+  <div class="page fade-in" id="page1">
+
   <div class="hero">
     <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:8px;">
       <img src="https://i.ibb.co/v4K3wF4J/output-onlinegiftools.gif" alt="nub nub cat" style="width:48px; height:48px; object-fit:contain;"/>
@@ -293,13 +328,77 @@
   <div class="search-card">
     <span class="search-label">Your username</span>
     <div class="search-row">
-      <input type="text" id="usernameInput" placeholder="e.g. afiqahpikachu" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
-      <button class="search-btn" onclick="searchOrders()">Track →</button>
+      <input type="text" id="landingUsernameInput" placeholder="e.g. afiqahpikachu" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+      <button class="search-btn" onclick="goToResults()">Track →</button>
     </div>
     <div class="recent-searches" id="recentSearches"></div>
   </div>
 
-  <div id="results"></div>
+  </div>
+  <!-- ============================================ -->
+  <!--            END OF PAGE 1 — LANDING           -->
+  <!-- ============================================ -->
+
+  <!-- ============================================ -->
+  <!--  PAGE 2 — RESULTS (Search + Dashboard + Filter) -->
+  <!-- ============================================ -->
+  <div class="page page-hidden" id="page2">
+
+    <div class="results-topbar">
+      <button class="back-btn" onclick="goToLanding()" title="Back">←</button>
+      <div class="search-row">
+        <input type="text" id="usernameInput" placeholder="e.g. afiqahpikachu" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+        <button class="search-btn" onclick="searchOrders()">Track →</button>
+      </div>
+    </div>
+
+    <div id="results"></div>
+
+    <div class="checkout-cta">
+      <button class="checkout-cta-btn" onclick="goToCheckout()">Mau checkout barang kah? 🛍️</button>
+    </div>
+
+  </div>
+  <!-- ============================================ -->
+  <!--            END OF PAGE 2 — RESULTS           -->
+  <!-- ============================================ -->
+
+  <!-- ============================================ -->
+  <!--  PAGE 3 — CHECKOUT INSTRUCTIONS              -->
+  <!-- ============================================ -->
+  <div class="page page-hidden" id="page3">
+
+    <div class="results-topbar">
+      <button class="back-btn" onclick="goToResultsFromCheckout()" title="Back">←</button>
+      <span style="font-size:14px; font-weight:500; color:var(--navy);">Checkout your items</span>
+    </div>
+
+    <div class="checkout-card">
+      <h2>Ready to checkout? 🛍️</h2>
+      <p class="checkout-sub">Send your details to our postage account and we'll take it from there!</p>
+
+      <a class="checkout-tg-btn" href="https://t.me/misuclubpostage" target="_blank" rel="noopener noreferrer">
+        ✈️ Message @misuclubpostage
+      </a>
+
+      <div class="checkout-format">Please send out your details with the following format to @misuclubpostage
+
+name : 
+address : 
+phone number : 
+tags/order ID : 
+items : </div>
+
+      <div class="checkout-note">
+        <strong>⚠️ Important:</strong> Please make sure to only checkout your items when it's already arrived at me. Checkout #tiramisuarrival to see whether your items have arrived or not.
+      </div>
+    </div>
+
+  </div>
+  <!-- ============================================ -->
+  <!--         END OF PAGE 3 — CHECKOUT             -->
+  <!-- ============================================ -->
+
 </main>
 
 <footer>made with 🎀 by tiramisuclub &nbsp;✦&nbsp; ✦</footer>
@@ -345,6 +444,50 @@
     applyTheme(newTheme);
   }
 
+  /* ---------- PAGE NAVIGATION ---------- */
+  function goToResults() {
+    const username = document.getElementById('landingUsernameInput').value.trim();
+    if (!username) {
+      document.getElementById('landingUsernameInput').focus();
+      return;
+    }
+    document.getElementById('usernameInput').value = username;
+
+    document.getElementById('page1').classList.add('page-hidden');
+    document.getElementById('page3').classList.add('page-hidden');
+    const page2 = document.getElementById('page2');
+    page2.classList.remove('page-hidden');
+    page2.classList.add('fade-in');
+
+    searchOrders();
+    window.scrollTo(0, 0);
+  }
+
+  function goToLanding() {
+    document.getElementById('page2').classList.add('page-hidden');
+    document.getElementById('page3').classList.add('page-hidden');
+    const page1 = document.getElementById('page1');
+    page1.classList.remove('page-hidden');
+    page1.classList.add('fade-in');
+    window.scrollTo(0, 0);
+  }
+
+  function goToCheckout() {
+    document.getElementById('page2').classList.add('page-hidden');
+    const page3 = document.getElementById('page3');
+    page3.classList.remove('page-hidden');
+    page3.classList.add('fade-in');
+    window.scrollTo(0, 0);
+  }
+
+  function goToResultsFromCheckout() {
+    document.getElementById('page3').classList.add('page-hidden');
+    const page2 = document.getElementById('page2');
+    page2.classList.remove('page-hidden');
+    page2.classList.add('fade-in');
+    window.scrollTo(0, 0);
+  }
+
   /* ---------- RECENT SEARCHES ---------- */
   function getRecentSearches() {
     try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch { return []; }
@@ -373,8 +516,8 @@
   }
 
   function quickSearch(username) {
-    document.getElementById('usernameInput').value = username;
-    searchOrders();
+    document.getElementById('landingUsernameInput').value = username;
+    goToResults();
   }
 
   /* ---------- RETURNING USER ---------- */
@@ -392,17 +535,17 @@
   function useSavedUsername() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      document.getElementById('usernameInput').value = saved;
+      document.getElementById('landingUsernameInput').value = saved;
       document.getElementById('returningBanner').style.display = 'none';
-      searchOrders();
+      goToResults();
     }
   }
 
   function dismissBanner() {
     document.getElementById('returningBanner').style.display = 'none';
     localStorage.removeItem(STORAGE_KEY);
-    document.getElementById('usernameInput').value = '';
-    document.getElementById('usernameInput').focus();
+    document.getElementById('landingUsernameInput').value = '';
+    document.getElementById('landingUsernameInput').focus();
   }
 
   async function fetchSheet(tabName) {
@@ -631,6 +774,9 @@
     }
   }
 
+  document.getElementById('landingUsernameInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') goToResults();
+  });
   document.getElementById('usernameInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') searchOrders();
   });
