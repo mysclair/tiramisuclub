@@ -382,7 +382,7 @@
     </div>
 
     <div class="checkout-card">
-      <h2>Dah ready nak checkout? 🛍️</h2>
+      <h2>Ready to checkout? 🛍️</h2>
       <p class="checkout-sub">Send your details to our postage account and we'll take it from there!</p>
 
       <a class="checkout-tg-btn" href="https://t.me/misuclubpostage" target="_blank" rel="noopener noreferrer">
@@ -427,6 +427,7 @@ Items:</div>
     item:      3,   // D
     qty:       11,  // L - Quantity
     emsAmount: 13,  // N - EMS Amount
+    emsPaid:   14,  // O - EMS PAID checkbox
     status:    16,  // Q - STATUS
   };
 
@@ -582,6 +583,11 @@ Items:</div>
     return String(row.c[index].v).trim();
   }
 
+  function getBool(row, index) {
+    if (!row.c || !row.c[index]) return false;
+    return row.c[index].v === true;
+  }
+
   function statusClass(status) {
     const s = status.toUpperCase();
     if (s.includes('ARRIVED'))        return 'status-arrived';
@@ -594,9 +600,9 @@ Items:</div>
     return 'status-default';
   }
 
-  function formatEMS(amount, status) {
+  function formatEMS(amount, emsPaid) {
     if (!amount || amount === '0' || amount === 'RM0.00' || amount === '0.0') return '—';
-    if (status.toUpperCase().includes('EMS PAID')) return '<span class="ems-paid">💕 Paid</span>';
+    if (emsPaid) return '<span class="ems-paid">💕 Paid</span>';
     const num = parseFloat(amount);
     if (!isNaN(num)) return `<span class="ems-amount">RM${num.toFixed(2)}</span>`;
     return `<span class="ems-amount">${amount}</span>`;
@@ -705,7 +711,7 @@ Items:</div>
           <td><span class="order-id">${o.orderID}</span></td>
           <td class="item-name">${o.item || '—'}</td>
           <td><span class="status ${statusClass(o.status)}">${o.status.toUpperCase() === 'EMS PAID' ? 'READY FOR POSTAGE' : (o.status || 'SECURED')}</span></td>
-          <td>${formatEMS(o.emsAmount, o.status)}</td>
+          <td>${formatEMS(o.emsAmount, o.emsPaid)}</td>
           <td style="font-family:'DM Mono', monospace; font-weight:500;">${qtyCell}</td>
         </tr>`;
     }).join('');
@@ -758,6 +764,7 @@ Items:</div>
           status:    getCell(row, COL.status),
           qty:       getCell(row, COL.qty),
           emsAmount: getCell(row, COL.emsAmount),
+          emsPaid:   getBool(row, COL.emsPaid),
         }));
       }
 
