@@ -238,10 +238,18 @@
   .checkout-card h2 { font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
   .checkout-card .checkout-sub { font-size: 13px; color: var(--mid); margin-bottom: 20px; }
   body.dark-mode .checkout-card h2 { color: #EDEFF5; }
+  .checkout-page-title { font-size: 14px; font-weight: 500; color: var(--navy); }
+  body.dark-mode .checkout-page-title { color: #F5F0E8; }
   .checkout-tg-btn { display: inline-flex; align-items: center; gap: 8px; background: #229ED9; color: white; border: none; border-radius: 10px; padding: 11px 20px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; margin-bottom: 22px; transition: background 0.2s; }
   .checkout-tg-btn:hover { background: #1c87ba; }
-  .checkout-format { background: var(--cream); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; font-family: 'DM Mono', monospace; font-size: 13px; line-height: 2; color: var(--charcoal); white-space: pre-wrap; margin-bottom: 18px; }
-  body.dark-mode .checkout-format { background: var(--cream-dark); }
+  .checkout-format-intro { font-size: 13px; color: var(--charcoal); margin-bottom: 10px; }
+  body.dark-mode .checkout-format-intro { color: #EDEFF5; }
+  .checkout-format-wrap { position: relative; margin-bottom: 18px; }
+  .checkout-format { background: var(--cream); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; font-family: 'DM Mono', monospace; font-size: 13px; line-height: 2; color: var(--charcoal); white-space: pre-wrap; }
+  body.dark-mode .checkout-format { background: var(--cream-dark); color: #EDEFF5; }
+  .checkout-copy-btn { position: absolute; top: 10px; right: 10px; background: var(--navy); color: white; border: none; border-radius: 8px; padding: 6px 12px; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+  .checkout-copy-btn:hover { background: var(--navy-dark); }
+  .checkout-copy-btn.copied { background: #2E7D32; }
   .checkout-note { font-size: 12.5px; color: var(--mid); line-height: 1.6; background: rgba(122,26,26,0.06); border-left: 3px solid var(--maroon); border-radius: 0 8px 8px 0; padding: 12px 16px; }
   .checkout-note strong { color: var(--maroon); }
   body.dark-mode .checkout-note { background: rgba(239,154,154,0.08); }
@@ -370,7 +378,7 @@
 
     <div class="results-topbar">
       <button class="back-btn" onclick="goToResultsFromCheckout()" title="Back">←</button>
-      <span style="font-size:14px; font-weight:500; color:var(--navy);">Checkout your items</span>
+      <span class="checkout-page-title">Checkout your items</span>
     </div>
 
     <div class="checkout-card">
@@ -381,13 +389,16 @@
         ✈️ Message @misuclubpostage
       </a>
 
-      <div class="checkout-format">Please send out your details with the following format to @misuclubpostage
+      <p class="checkout-format-intro">Please send out your details with the following format to @misuclubpostage:</p>
 
-name : 
-address : 
-phone number : 
-tags/order ID : 
-items : </div>
+      <div class="checkout-format-wrap">
+        <div class="checkout-format" id="checkoutFormatText">Name:
+Address:
+Phone number:
+Tags/Order ID:
+Items:</div>
+        <button class="checkout-copy-btn" id="checkoutCopyBtn" onclick="copyCheckoutFormat()">📋 Copy format</button>
+      </div>
 
       <div class="checkout-note">
         <strong>⚠️ Important:</strong> Please make sure to only checkout your items when it's already arrived at me. Checkout #tiramisuarrival to see whether your items have arrived or not.
@@ -415,7 +426,7 @@ items : </div>
     username:  2,   // C
     item:      3,   // D
     qty:       11,  // L - Quantity
-    emsAmount: 12,  // M - EMS Amount
+    emsAmount: 13,  // N - EMS Amount
     status:    16,  // Q - STATUS
   };
 
@@ -486,6 +497,16 @@ items : </div>
     page2.classList.remove('page-hidden');
     page2.classList.add('fade-in');
     window.scrollTo(0, 0);
+  }
+
+  function copyCheckoutFormat() {
+    const text = document.getElementById('checkoutFormatText').innerText;
+    const btn = document.getElementById('checkoutCopyBtn');
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '📋 Copy format'; btn.classList.remove('copied'); }, 2000);
+    });
   }
 
   /* ---------- RECENT SEARCHES ---------- */
