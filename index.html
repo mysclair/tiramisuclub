@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>tiramisuclub — Track My Order</title>
+  <title>tiramisuclub 🍰</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -238,6 +238,15 @@
   .checkout-card h2 { font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
   .checkout-card .checkout-sub { font-size: 13px; color: var(--mid); margin-bottom: 20px; }
   body.dark-mode .checkout-card h2 { color: #EDEFF5; }
+  .checkout-closed-card { text-align: center; }
+  .closed-emoji { font-size: 40px; margin-bottom: 14px; }
+  .checkout-cta-btn.postage-closed { background: var(--mid); box-shadow: none; cursor: pointer; }
+  .checkout-cta-btn.postage-closed:hover { background: #4A5468; }
+  .postage-status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 5px 12px; border-radius: 20px; margin-bottom: 10px; }
+  .postage-status-pill.open { background: #E8F5E9; color: #2E7D32; }
+  .postage-status-pill.closed { background: #FFEBEE; color: #C62828; }
+  body.dark-mode .postage-status-pill.open { background: #16321C; color: #81C784; }
+  body.dark-mode .postage-status-pill.closed { background: #3D1616; color: #EF9A9A; }
   .checkout-page-title { font-size: 14px; font-weight: 500; color: var(--navy); }
   body.dark-mode .checkout-page-title { color: #F5F0E8; }
   .checkout-tg-btn { display: inline-flex; align-items: center; gap: 8px; background: #229ED9; color: white; border: none; border-radius: 10px; padding: 11px 20px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; margin-bottom: 22px; transition: background 0.2s; }
@@ -363,7 +372,8 @@
     <div id="results"></div>
 
     <div class="checkout-cta">
-      <button class="checkout-cta-btn" onclick="goToCheckout()">Mau checkout barang kah? 🛍️</button>
+      <div id="postageStatusPill"></div>
+      <button class="checkout-cta-btn" id="checkoutCtaBtn" onclick="goToCheckout()">Mau checkout barang kah? 🛍️</button>
     </div>
 
   </div>
@@ -381,8 +391,9 @@
       <span class="checkout-page-title">Checkout your items</span>
     </div>
 
-    <div class="checkout-card">
-      <h2>LESGOOO CHECKOUTT 🛍️</h2>
+    <!-- OPEN STATE — shown when POSTAGE_OPEN = true -->
+    <div class="checkout-card" id="checkoutOpenCard">
+      <h2>Ready to checkout? 🛍️</h2>
       <p class="checkout-sub">Send your details to our postage account and we'll take it from there!</p>
 
       <a class="checkout-tg-btn" href="https://t.me/misuclubpostage" target="_blank" rel="noopener noreferrer">
@@ -405,6 +416,17 @@ Items:</div>
       </div>
     </div>
 
+    <!-- CLOSED STATE — shown when POSTAGE_OPEN = false -->
+    <div class="checkout-card checkout-closed-card page-hidden" id="checkoutClosedCard">
+      <div class="closed-emoji">💤</div>
+      <h2>Postage is currently closed</h2>
+      <p class="checkout-sub">We're not accepting checkout requests right now — please check back later or wait for an announcement!</p>
+      <div class="checkout-note">
+        <strong>📢 Stay updated:</strong> Follow our announcements on the home page for when postage reopens.
+      </div>
+    </div>
+    </div>
+
   </div>
   <!-- ============================================ -->
   <!--         END OF PAGE 3 — CHECKOUT             -->
@@ -415,6 +437,14 @@ Items:</div>
 <footer>made with 🎀 by tiramisuclub &nbsp;✦&nbsp; ✦</footer>
 
 <script>
+  // ============================================
+  //  POSTAGE TOGGLE — CHANGE THIS TO OPEN/CLOSE POSTAGE
+  //  Set to true  → postage is OPEN (checkout page works normally)
+  //  Set to false → postage is CLOSED (shows a closed message)
+  // ============================================
+  const POSTAGE_OPEN = false;
+  // ============================================
+
   const SHEET_ID = '1qI5ECoJ7JVgXJxC2OhQPacD-wj_ztXycyD0-HLvQewA';
   const STORAGE_KEY = 'tiramisuclub_username';
   const THEME_KEY = 'tiramisuclub_theme';
@@ -542,10 +572,33 @@ Items:</div>
     goToResults();
   }
 
+  /* ---------- POSTAGE OPEN/CLOSED STATE ---------- */
+  function applyPostageState() {
+    const pill = document.getElementById('postageStatusPill');
+    const btn = document.getElementById('checkoutCtaBtn');
+    const openCard = document.getElementById('checkoutOpenCard');
+    const closedCard = document.getElementById('checkoutClosedCard');
+
+    if (POSTAGE_OPEN) {
+      pill.innerHTML = `<span class="postage-status-pill open">🟢 Postage Open</span>`;
+      btn.textContent = 'Mau checkout barang kah? 🛍️';
+      btn.classList.remove('postage-closed');
+      openCard.classList.remove('page-hidden');
+      closedCard.classList.add('page-hidden');
+    } else {
+      pill.innerHTML = `<span class="postage-status-pill closed">🔴 Postage Closed</span>`;
+      btn.textContent = 'Postage is closed 💤';
+      btn.classList.add('postage-closed');
+      openCard.classList.add('page-hidden');
+      closedCard.classList.remove('page-hidden');
+    }
+  }
+
   /* ---------- RETURNING USER ---------- */
   window.addEventListener('load', () => {
     applyTheme(localStorage.getItem(THEME_KEY) || 'light');
     renderRecentSearches();
+    applyPostageState();
 
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
