@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>tiramisuclub 🍰</title>
+  <title>tiramisuclub — Track My Order</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -113,6 +113,7 @@
     .status-readyems  { background: #FFF8E1; color: #F57F17; }
     .status-emspaid   { background: #E8F5E9; color: #2E7D32; }
     .status-arrived   { background: #E8F5E9; color: #1B5E20; }
+    .status-completed-final { background: #DCEFFF; color: #0D47A1; }
     .status-cancelled { background: #FFEBEE; color: #C62828; }
     .status-default   { background: #F5F5F5; color: #616161; }
 
@@ -146,6 +147,7 @@
     body.dark-mode .status-readyems  { background: #3D3110; color: #FFD54F; }
     body.dark-mode .status-emspaid   { background: #16321C; color: #81C784; }
     body.dark-mode .status-arrived   { background: #16321C; color: #81C784; }
+    body.dark-mode .status-completed-final { background: #0D2A4A; color: #82B4F0; }
     body.dark-mode .status-cancelled { background: #3D1616; color: #EF9A9A; }
     body.dark-mode .status-default   { background: #2A2A2A; color: #B0B0B0; }
     body.dark-mode tr:hover td { background: #202A44; }
@@ -312,8 +314,8 @@
     <div class="announce-item">
       <span class="announce-icon">📦</span>
       <div class="announce-text">
-        <div class="announce-title">Postage forms are closed!</div>
-        <div class="announce-body">Please wait for the next postage announcement in the channel 💗</div>
+        <div class="announce-title">Postage forms are open!</div>
+        <div class="announce-body">Dm @misuclubpostage with your postage infos and items (with tags) to checkout!</div>
       </div>
     </div>
 
@@ -444,6 +446,9 @@ Items:</div>
   // ============================================
   const POSTAGE_OPEN = false;
   // ============================================
+
+  // Web App URL that lets the website mark orders as Received/Completed
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-75f2jmtyZPgSGaBTtx3em8iIqkfdcpILEOldRPEAeoYQiOTs4iNoeSnA31MvRbqJ/exec';
 
   const SHEET_ID = '1qI5ECoJ7JVgXJxC2OhQPacD-wj_ztXycyD0-HLvQewA';
   const STORAGE_KEY = 'tiramisuclub_username';
@@ -643,6 +648,7 @@ Items:</div>
 
   function statusClass(status) {
     const s = status.toUpperCase();
+    if (s.includes('COMPLETED'))      return 'status-completed-final';
     if (s.includes('ARRIVED'))        return 'status-arrived';
     if (s.includes('EMS PAID'))       return 'status-emspaid';
     if (s.includes('READY FOR EMS'))  return 'status-readyems';
@@ -753,19 +759,36 @@ Items:</div>
       </div>`;
   }
 
+  let rowDataStore = {};
+  let rowIdCounter = 0;
+
   function buildTable(orders, warehouse) {
     if (orders.length === 0) return '';
     const badgeClass = warehouse === 'KR' ? 'badge-kr' : warehouse === 'CH' ? 'badge-ch' : 'badge-other';
     const warehouseLabel = warehouse === 'KR' ? '🇰🇷 Korea Warehouse' : warehouse === 'CH' ? '🇨🇳 China Warehouse' : '🏷️ Other Tags';
     const rows = orders.map(o => {
       const qtyCell = o.qty && o.qty !== '' ? o.qty : '1';
+      const isCompleted = o.status.toUpperCase().includes('COMPLETED');
+      const isArrived = o.status.toUpperCase().includes('ARRIVED') && !isCompleted;
+
+      const rowId = 'row_' + (rowIdCounter++);
+      rowDataStore[rowId] = o;
+
+      let actionCell = '<span style="color:var(--mid); font-size:11px;">—</span>';
+      if (isCompleted) {
+        actionCell = '<span style="color:#2E7D32; font-size:12px; font-weight:600;">✓ Done</span>';
+      } else if (isArrived) {
+        actionCell = `<button class="receive-btn" id="btn_${rowId}" onclick="markReceived('${rowId}')">Mark Received</button>`;
+      }
+
       return `
-        <tr>
+        <tr id="tr_${rowId}">
           <td><span class="order-id">${o.orderID}</span></td>
           <td class="item-name">${o.item || '—'}</td>
-          <td><span class="status ${statusClass(o.status)}">${o.status.toUpperCase() === 'EMS PAID' ? 'READY FOR POSTAGE' : (o.status || 'SECURED')}</span></td>
+          <td><span class="status ${statusClass(o.status)}" id="status_${rowId}">${o.status.toUpperCase() === 'EMS PAID' ? 'READY FOR POSTAGE' : (o.status || 'SECURED')}</span></td>
           <td>${formatEMS(o.emsAmount, o.emsPaid)}</td>
           <td style="font-family:'DM Mono', monospace; font-weight:500;">${qtyCell}</td>
+          <td id="action_${rowId}">${actionCell}</td>
         </tr>`;
     }).join('');
     return `
@@ -783,6 +806,7 @@ Items:</div>
                 <th>Status</th>
                 <th>EMS</th>
                 <th>QTY</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>${rows}</tbody>
@@ -805,7 +829,7 @@ Items:</div>
     try {
       const [krRows, chRows, otherRows] = await Promise.all([fetchSheet('KR'), fetchSheet('CH'), fetchSheet('OTHER TAGS')]);
 
-      function filterOrders(rows) {
+      function filterOrders(rows, sheetName) {
         return rows.slice(DATA_START_ROW).filter(row => {
           if (!row.c) return false;
           const user = getCell(row, COL.username).toLowerCase();
@@ -813,17 +837,19 @@ Items:</div>
           return user === username && item !== '';
         }).map(row => ({
           orderID:   getCell(row, COL.orderID),
+          username:  getCell(row, COL.username),
           item:      getCell(row, COL.item),
           status:    getCell(row, COL.status),
           qty:       getCell(row, COL.qty),
           emsAmount: getCell(row, COL.emsAmount),
           emsPaid:   getBool(row, COL.emsPaid),
+          sheetName: sheetName,
         }));
       }
 
-      const krOrders = filterOrders(krRows);
-      const chOrders = filterOrders(chRows);
-      const otherOrders = filterOrders(otherRows);
+      const krOrders = filterOrders(krRows, 'KR');
+      const chOrders = filterOrders(chRows, 'CH');
+      const otherOrders = filterOrders(otherRows, 'OTHER TAGS');
       const allOrders = [...krOrders, ...chOrders, ...otherOrders];
 
       if (allOrders.length === 0) {
