@@ -576,7 +576,7 @@ Items:</div>
       statusEl.className = 'status status-completed-final';
 
       const actionCell = document.getElementById('action_' + rowId);
-      actionCell.innerHTML = '<span style="color:#2E7D32; font-size:12px; font-weight:600;">✓ Done</span>';
+      actionCell.innerHTML = '<span style="color:#2E7D32; font-size:12px; font-weight:600;">✅ Completed</span>';
     }).catch(() => {
       btn.disabled = false;
       btn.textContent = 'Mark Received';
@@ -815,7 +815,7 @@ Items:</div>
 
       let actionCell = '<span style="color:var(--mid); font-size:11px;">—</span>';
       if (isCompleted) {
-        actionCell = '<span style="color:#2E7D32; font-size:12px; font-weight:600;">✓ Done</span>';
+        actionCell = '<span style="color:#2E7D32; font-size:12px; font-weight:600;">✅ Completed</span>';
       } else if (isArrived) {
         actionCell = `<button class="receive-btn" id="btn_${rowId}" onclick="markReceived('${rowId}')">Mark Received</button>`;
       }
