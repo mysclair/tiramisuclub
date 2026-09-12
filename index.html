@@ -767,11 +767,11 @@ Items:</div>
   }
 
   function buildSummary(allOrders) {
-    const counts = { shipped: 0, arrived: 0, readyPostage: 0 };
+    const counts = { shipped: 0, completed: 0, readyPostage: 0 };
     allOrders.forEach(o => {
       const s = o.status.toUpperCase();
-      if (s.includes('ARRIVED')) counts.arrived++;
-      else if (s === 'EMS PAID') counts.readyPostage++;
+      if (s.includes('COMPLETED')) counts.completed++;
+      else if (s === 'EMS PAID' || s.includes('ARRIVED')) counts.readyPostage++;
       else if (s.includes('SHIPPED') || s.includes('OTW') || s.includes('EMS')) counts.shipped++;
     });
     return `
@@ -792,8 +792,8 @@ Items:</div>
         </div>
         <div class="summary-divider"></div>
         <div class="summary-item">
-          <div class="summary-num" style="color:#1B5E20">${counts.arrived}</div>
-          <div class="summary-label">Arrived</div>
+          <div class="summary-num" style="color:#0D47A1">${counts.completed}</div>
+          <div class="summary-label">Completed</div>
         </div>
       </div>`;
   }
