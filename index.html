@@ -110,7 +110,7 @@
     .status-secured   { background: #FFF3E0; color: #E07B00; }
     .status-otw       { background: #EDE7F6; color: #6A3DB8; }
     .status-shipped   { background: #E3F2FD; color: #1565C0; }
-    .status-readyems  { background: #FFF8E1; color: #F57F17; }
+    .status-readyems  { background: #EFE3F5; color: #6E4E8C; }
     .status-emspaid   { background: #E8F5E9; color: #2E7D32; }
     .status-arrived   { background: #E8F5E9; color: #1B5E20; }
     .status-completed-final { background: #DCEFFF; color: #0D47A1; }
@@ -118,7 +118,7 @@
     .receive-btn:hover { background: var(--navy-dark); }
     .receive-btn:disabled { background: #A0AABF; cursor: not-allowed; }
     body.dark-mode .receive-btn:disabled { background: #4A5468; }
-    .status-cancelled { background: #FFEBEE; color: #C62828; }
+    .status-cancelled { background: #E8E8E8; color: #5A5A5A; }
     .status-default   { background: #F5F5F5; color: #616161; }
 
     /* STATES */
@@ -148,11 +148,11 @@
     body.dark-mode .status-secured   { background: #3D2E10; color: #FFB74D; }
     body.dark-mode .status-otw       { background: #2E2547; color: #B39DDB; }
     body.dark-mode .status-shipped   { background: #16324A; color: #64B5F6; }
-    body.dark-mode .status-readyems  { background: #3D3110; color: #FFD54F; }
+    body.dark-mode .status-readyems  { background: #3D2E52; color: #C9A9E0; }
     body.dark-mode .status-emspaid   { background: #16321C; color: #81C784; }
     body.dark-mode .status-arrived   { background: #16321C; color: #81C784; }
     body.dark-mode .status-completed-final { background: #0D2A4A; color: #82B4F0; }
-    body.dark-mode .status-cancelled { background: #3D1616; color: #EF9A9A; }
+    body.dark-mode .status-cancelled { background: #3A3A3A; color: #B0B0B0; }
     body.dark-mode .status-default   { background: #2A2A2A; color: #B0B0B0; }
     body.dark-mode tr:hover td { background: #202A44; }
     body.dark-mode .hero h2 { color: #EDEFF5; }
@@ -824,7 +824,7 @@ Items:</div>
         <tr id="tr_${rowId}">
           <td><span class="order-id">${o.orderID}</span></td>
           <td class="item-name">${o.item || '—'}</td>
-          <td><span class="status ${statusClass(o.status)}" id="status_${rowId}">${o.status.toUpperCase() === 'EMS PAID' ? 'READY FOR POSTAGE' : (o.status || 'SECURED')}</span></td>
+          <td><span class="status ${statusClass(o.status)}" id="status_${rowId}">${o.status.toUpperCase() === 'ARRIVED' ? 'ARRIVED AT PA' : (o.status || 'SECURED')}</span></td>
           <td>${formatEMS(o.emsAmount, o.emsPaid)}</td>
           <td style="font-family:'DM Mono', monospace; font-weight:500;">${qtyCell}</td>
           <td id="action_${rowId}">${actionCell}</td>
