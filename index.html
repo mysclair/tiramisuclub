@@ -114,6 +114,10 @@
     .status-emspaid   { background: #E8F5E9; color: #2E7D32; }
     .status-arrived   { background: #E8F5E9; color: #1B5E20; }
     .status-completed-final { background: #DCEFFF; color: #0D47A1; }
+    .receive-btn { background: var(--navy); color: white; border: none; border-radius: 8px; padding: 7px 14px; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+    .receive-btn:hover { background: var(--navy-dark); }
+    .receive-btn:disabled { background: #A0AABF; cursor: not-allowed; }
+    body.dark-mode .receive-btn:disabled { background: #4A5468; }
     .status-cancelled { background: #FFEBEE; color: #C62828; }
     .status-default   { background: #F5F5F5; color: #616161; }
 
@@ -542,6 +546,41 @@ Items:</div>
       btn.textContent = '✓ Copied!';
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = '📋 Copy format'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function markReceived(rowId) {
+    const o = rowDataStore[rowId];
+    if (!o) return;
+
+    const btn = document.getElementById('btn_' + rowId);
+    btn.disabled = true;
+    btn.textContent = 'Marking...';
+
+    // Apps Script Web Apps don't allow reading the response cross-origin,
+    // so we send the request fire-and-forget style and optimistically update the UI.
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        sheet: o.sheetName,
+        orderID: o.orderID,
+        username: o.username,
+        item: o.item,
+      }),
+    }).then(() => {
+      // Optimistically update the row to show Completed
+      const statusEl = document.getElementById('status_' + rowId);
+      statusEl.textContent = 'COMPLETED';
+      statusEl.className = 'status status-completed-final';
+
+      const actionCell = document.getElementById('action_' + rowId);
+      actionCell.innerHTML = '<span style="color:#2E7D32; font-size:12px; font-weight:600;">✓ Done</span>';
+    }).catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Mark Received';
+      alert('Something went wrong. Please try again or DM us if this keeps happening!');
     });
   }
 
